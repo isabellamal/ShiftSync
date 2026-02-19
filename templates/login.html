@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <body> 
+        <form action="{{url_for('login')}}" method="POST">
+            {% if msg %}
+            <ul>
+                <li>{{ msg }}</li>
+            </ul>
+            {% endif %}
+
+            <h1>Login</h1>
+
+            <input type="text" name="EmployeeId">
+            <br>
+            <br>
+            <input type="submit" value="Log in"> 
+        </form>
+    </body>
+</html>
