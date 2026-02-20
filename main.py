@@ -41,7 +41,7 @@ def existinguser():
 
     # additional code goes here 
 
-    return render_template('existing_user.html', user=user_id)
+    return render_template('existinguser.html', user=user_id)
 
 @app.route('/newuser')
 def newuser():
