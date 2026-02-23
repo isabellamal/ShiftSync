@@ -492,9 +492,9 @@
         { dayOffset: 5, startHourIndex: 0, spanHours: 8, label: '8AM–4PM', style: 'shift-orange' },
     ];
 
-    let weekOffSet = 0;
+    let weekOffset = 0;
 
-    function getStartOfWeek(offset){
+    function getWeekStart(offset){
         const now = new Date();
         const day = now.getDay(); // 0 = Sunday
         const sunday = new Date(now);
