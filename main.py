@@ -289,3 +289,5 @@ def delete_availability(availability_id):
         pass
 
     return redirect(url_for('availability'))
+if __name__ == "__main__":
+    app.run(debug=True)
