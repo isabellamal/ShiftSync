@@ -380,19 +380,15 @@
         <p> View your schedule, manage availability, & request shift swaps.</p>
     </div>
 
-    <!--Action Buttons-->
-    <div class="action-row">
-        <button class=""btn btn-primary" onclick="location.href='{{ url_for('Add Availability – coming soon!') }}">
-            ＋ Add Availability
-        </button>
-        <button class="btn btn-secondary" onclick="alert('Modify Availability – coming soon!')">
-            ✎ Modify Availability
-        </button>
-        <button class="btn btn-warning" onclick="alert('Swap / Request Shifts – coming soon!')">
-            ⇄ Swap / Request Shifts
-        </button>
-    </div>
-
+<!--Action Buttons-->
+<div class="action-row">
+  <a class="btn btn-primary" href="{{ url_for('availability') }}">＋ Add Availability</a>
+  <a class="btn btn-secondary" href="{{ url_for('availability') }}">✎ Modify Availability</a>
+  <button class="btn btn-warning" onclick="alert('Swap / Request Shifts – coming soon!')">
+    ⇄ Swap / Request Shifts
+  </button>
+</div>
+    
     <!--Week calendar view-->
     <div class="section-header">
         <span class="section-title">Weekly Schedule</span>
