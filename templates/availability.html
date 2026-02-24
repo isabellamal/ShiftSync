@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShiftSync - Availability</title>
+</head>
+<body>
+  <h1>Availability</h1>
+  <p>Employee ID: <strong>{{ user }}</strong></p>
+  <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a> | <a href="{{ url_for('logout') }}">Log out</a></p>
+
+  {% if msg %}
+    <p style="color:red;">{{ msg }}</p>
+  {% endif %}
+
+  <h2>Add Availability</h2>
+  <form method="POST">
+    <label>Day</label>
+    <select name="day" required>
+      {% for d in days %}
+        <option value="{{ d }}">{{ d }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Start</label>
+    <select name="start" required>
+      {% for t in times %}
+        <option value="{{ t }}">{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label>End</label>
+    <select name="end" required>
+      {% for t in times %}
+        <option value="{{ t }}">{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Add</button>
+  </form>
+
+  <hr>
+
+  <h2>My Availability Blocks</h2>
+  {% if availability and availability|length > 0 %}
+    <ul>
+      {% for a in availability %}
+        <li>
+          {{ a[1] }} — {{ a[2] }} to {{ a[3] }}
+          <a href="{{ url_for('edit_availability', availability_id=a[0]) }}">Edit</a>
+
+          <form method="POST" action="{{ url_for('delete_availability', availability_id=a[0]) }}" style="display:inline;">
+            <button type="submit">Delete</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No availability added yet.</p>
+  {% endif %}
+</body>
+</html>
