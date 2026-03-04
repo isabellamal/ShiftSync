@@ -484,7 +484,7 @@ def approve_swap_request(request_id):
             if not shift_row or shift_row[0] != requester_id:
                 return redirect(url_for('dashboard'))
 
-            # 3) Move the shift to the approver (target employee)
+            # 3) Move the shift to the approver(target employee)
             cur.execute("""
                 UPDATE Shifts
                 SET EmployeeId=?
