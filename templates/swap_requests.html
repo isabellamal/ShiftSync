@@ -1,0 +1,18 @@
+<h2>My Swap Requests</h2>
+
+{% if requests %}
+  {% for r in requests %}
+    <div>
+      {{ r[1] }} {{ r[2] }} - {{ r[3] }}
+      Status: {{ r[5] }}
+
+      {% if r[5] == 'pending' %}
+      <form method="POST" action="{{ url_for('cancel_swap_request', request_id=r[0]) }}">
+        <button type="submit">Cancel</button>
+      </form>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No swap requests.</p>
+{% endif %}
