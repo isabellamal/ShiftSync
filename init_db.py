@@ -8,8 +8,6 @@ cur.execute("DROP TABLE IF EXISTS Shifts")
 cur.execute("DROP TABLE IF EXISTS EmployeeAvailability")
 cur.execute("DROP TABLE IF EXISTS EmployeeInfo")
 
-
-
 cur.execute('''CREATE TABLE IF NOT EXISTS EmployeeInfo(
     EmployeeId TEXT PRIMARY KEY NOT NULL,
     Name TEXT, 

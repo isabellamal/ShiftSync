@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShiftSync - Login</title>
+  <title>ShiftSync - Admin Login</title>
 
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
@@ -115,19 +115,19 @@
       transform: translateY(-1px);
     }
 
-    .admin-link {
+    .back-link {
       margin-top: 1.25rem;
       font-size: 0.8rem;
       color: var(--muted);
     }
 
-    .admin-link a {
+    .back-link a {
       color: var(--accent);
       text-decoration: none;
       font-weight: 600;
     }
 
-    .admin-link a:hover {
+    .back-link a:hover {
       text-decoration: underline;
     }
   </style>
@@ -138,7 +138,7 @@
   <div class="login-card">
     <div class="logo">Shift<span>Sync</span></div>
 
-    <h1>Employee Login</h1>
+    <h1>Administrator Login</h1>
 
     {% if msg %}
       <div class="error-box">
@@ -146,18 +146,18 @@
       </div>
     {% endif %}
 
-    <form action="{{url_for('login')}}" method="POST">
+    <form action="{{ url_for('admin') }}" method="POST">
 
-      <label>Employee ID</label>
-      <input type="text" name="EmployeeId" required>
+      <label>Admin ID</label>
+      <input type="text" name="AdminId" required>
 
-      <button type="submit" class="btn">Log in</button>
+      <button type="submit" class="btn">Continue</button>
 
     </form>
 
-    <div class="admin-link">
-      Are you an administrator?
-      <a href="{{ url_for('admin') }}">Sign in here</a>
+    <div class="back-link">
+      Not an administrator?
+      <a href="{{ url_for('login') }}">Return to employee login</a>
     </div>
 
   </div>
