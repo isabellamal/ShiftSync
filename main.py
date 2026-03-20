@@ -210,6 +210,60 @@ def admin_dashboard():
         
     return render_template('admin_dashboard.html', admin=session['AdminId'])
 
+@app.route('/admin_reset_password', methods=['GET', 'POST'])
+def admin_reset_password():
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+
+    admin_id = session['AdminId']
+    msg = ""
+
+    if request.method == 'POST':
+        current_pw = request.form.get('current_password', '').strip()
+        new_pw = request.form.get('new_password', '').strip()
+        confirm_pw = request.form.get('confirm_password', '').strip()
+
+        if current_pw == "" or new_pw == "" or confirm_pw == "":
+            msg = "All fields are required."
+            return render_template ('admin_reset_password.html', admin = admin_id, msg=msg)
+
+        if new_pw != confirm_pw:
+            msg = "New passwords do not match."
+            return render_template('admin_reset_password.html', admin=admin_id, msg=msg)
+
+        try:
+            with sql.connect("ShiftSyncDB.db") as con:
+                cur = con.cursor()
+                cur.execute("SELECT AdminPass FROM AdminInfo WHERE AdminId=?", (admin_id,))
+                row = cur.fetchone()
+        except Exception:
+            msg = "Database error!"
+            return render_template('admin_reset_password.html', admin=admin_id, msg=msg)
+
+        if not row or not row[0]:
+            msg = "Admin account not found"
+            return render_template('admin_reset_password.html', admin=admin_id, msg=msg)
+            
+        saved_hash = row[0]
+
+        if not check_password_hash(saved_hash, current_pw):
+            msg = "Current password is incorrect."
+            return render_template('admin_reset_password.html', admin=admin_id, msg=msg)
+
+        new_hash = generate_password_hash(new_pw)
+
+        try:
+            with sql.connect("ShiftSyncDB.db") as con:
+                cur = con.cursor()
+                cur.execute("UPDATE AdminInfo SET AdminPass=? WHERE AdminId=?", (new_hash, admin_id))
+                con.commit()
+        except Exception:
+            msg = "Database error!"
+            return render_template('admin_reset_password.html', admin=admin_id, msg=msg)
+
+        msg = "Password updated successfully."
+    
+    return render_template('admin_reset_password.html', admin=admin_id, msg=msg)
 #dashboard 
 @app.route('/dashboard')
 def dashboard():
