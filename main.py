@@ -72,12 +72,38 @@ def admin():
 
     return render_template('admin.html', msg=msg)
 
-@app.route('/adminpassword', methods=['GET', 'POST']) # change later for issues 2 and 3
+@app.route('/adminpassword', methods=['GET', 'POST']) 
 def adminpassword():
     if 'AdminId' not in session: 
         return redirect(url_for('login'))
     
-    return render_template('adminpassword.html')
+    admin_id = session['AdminId']
+    msg = ""
+
+    if request.method == 'POST':
+        entered_pw = request.form.get('password', '').strip()
+
+        try:
+            with sql.connect("ShiftSyncDB.db") as con:
+                cur = con.cursor()
+                cur.execute("SELECT AdminPass FROM AdminInfo WHERE AdminId=?", (admin_id,))
+                row = cur.fetchone()
+        except Exception:
+            msg = "Database error!"
+            return render_template('adminpassword.html', admin=admin_id, msg=msg)
+
+        if (row is None) or (row[0] is None) or (row[0] == ""):
+            msg = "No admin password found."
+            return render_template('adminpassword.html', admin=admin_id, msg=msg)
+        
+        saved_hash = row[0]
+
+        if check_password_hash(saved_hash, entered_pw):
+            return redirect(url_for('admin_dashboard'))
+        else:
+            msg = "Incorrect password."
+
+    return render_template('adminpassword.html', admin=admin_id, msg=msg)
 
 @app.route('/existinguser', methods=['GET', 'POST'])
 def existinguser():
@@ -86,6 +112,10 @@ def existinguser():
 
     user_id = session['EmployeeId']
     msg = ""
+
+    #start attempts if not already there
+    if 'user_attempts' not in session:
+        session['user_attempts'] = 0
 
     # user pressed the "Log in" button
     if request.method == 'POST':
@@ -110,9 +140,19 @@ def existinguser():
 
         # check typed password against saved hash
         if check_password_hash(saved_hash, entered_pw):
+            session['user_attempts'] = 0
             return redirect(url_for('dashboard'))
-        else:
-            msg = "Incorrect password."
+        
+        # wrong password
+        session['user_attempts'] += 1
+        tries_left = 3 - session['user_attempts']
+
+        if session['user_attempts'] >= 3:
+            session['user_attempts'] = 0
+            msg = "Too many failed attempts. Please reset your password."
+            return redirect(url_for('newuser'))
+
+        msg = f"Incorrect password. You have {tries_left} attempt(s) left."
 
     return render_template('existinguser.html', user=user_id,  msg=msg)
 
@@ -162,6 +202,13 @@ def newuser():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+        
+    return render_template('admin_dashboard.html', admin=session['AdminId'])
 
 #dashboard 
 @app.route('/dashboard')
