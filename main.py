@@ -87,6 +87,10 @@ def existinguser():
     user_id = session['EmployeeId']
     msg = ""
 
+    #start attempts if not already there
+    if 'user_attempts' not in session:
+        session['user_attempts'] = 0
+
     # user pressed the "Log in" button
     if request.method == 'POST':
         entered_pw = request.form.get('password', '').strip()
@@ -110,9 +114,19 @@ def existinguser():
 
         # check typed password against saved hash
         if check_password_hash(saved_hash, entered_pw):
+            session['user_attempts'] = 0
             return redirect(url_for('dashboard'))
-        else:
-            msg = "Incorrect password."
+        
+        # wrong password
+        session['user_attempts'] += 1
+        tries_left = 3 - session['user_attempts']
+
+        if session['user_attempts'] >= 3:
+            session['user_attempts'] = 0
+            msg = "Too many failed attempts. Please reset your password."
+            return redirect(url_for('newuser'))
+
+        msg = f"Incorrect password. You have {tries_left} attempt(s) left."
 
     return render_template('existinguser.html', user=user_id,  msg=msg)
 
