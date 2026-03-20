@@ -17,9 +17,10 @@ def time_choices(step_minutes=30):
 
 TIME_CHOICES = time_choices(30)
 
-@app.route('/', methods = ['POST', 'GET'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     msg = ""
+
     if request.method == 'POST':
         EmployeeId = request.form['EmployeeId'].strip()
 
@@ -27,24 +28,56 @@ def login():
             with sql.connect("ShiftSyncDB.db") as con:
                 cur = con.cursor()
                 cur.execute("SELECT * FROM EmployeeInfo WHERE EmployeeId=?", (EmployeeId,))
-                found = cur.fetchone() # returns a tuple if a row matching the query exists
-
-        except Exception as e:
+                found = cur.fetchone()
+        except Exception:
             msg = "Database error!"
             return render_template('login.html', msg=msg)
-        
-        if found:
-            if found[2]: # if password exists
-                session['EmployeeId'] = found[0]
-                return redirect(url_for('existinguser'))
-            else: # if password does not exist
-                session['EmployeeId'] = found[0]
-                return redirect(url_for('newuser'))
 
+        if found:
+            session.clear()  # clear any old session (important for switching roles)
+            session['EmployeeId'] = found[0]
+
+            if found[2]:  # password exists
+                return redirect(url_for('existinguser'))
+            else:
+                return redirect(url_for('newuser'))
         else:
             msg = "Employee ID not found. Please check and try again."
-    
+
     return render_template('login.html', msg=msg)
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    msg = ""
+    if request.method == 'POST':
+        AdminId = request.form['AdminId'].strip()
+
+        try:
+            with sql.connect("ShiftSyncDB.db") as con:
+                cur = con.cursor()
+                cur.execute("SELECT * FROM AdminInfo WHERE AdminId=?", (AdminId,))
+                found = cur.fetchone()
+        except Exception:
+            msg = "Database error!"
+            return render_template('admin.html', msg=msg)
+
+        if found:
+            session.clear()  # IMPORTANT (same as login)
+            session['AdminId'] = found[0]
+
+            if found:  # password exists
+                return redirect(url_for('adminpassword'))
+        else:
+            msg = "Admin ID not found. Please check and try again."
+
+    return render_template('admin.html', msg=msg)
+
+@app.route('/adminpassword', methods=['GET', 'POST']) # change later for issues 2 and 3
+def adminpassword():
+    if 'AdminId' not in session: 
+        return redirect(url_for('login'))
+    
+    return render_template('adminpassword.html')
 
 @app.route('/existinguser', methods=['GET', 'POST'])
 def existinguser():
