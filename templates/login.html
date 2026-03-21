@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShiftSync - Login</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f3ef;
+      --surface: #ffffff;
+      --border: #e0ddd6;
+      --accent: #2d6a4f;
+      --accent-light: #d8f3dc;
+      --accent2: #e76f51;
+      --text: #1a1a1a;
+      --muted: #7a7a72;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 360px;
+      max-width: 95vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .logo span {
+      color: var(--accent2);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .error-box {
+      background: #fff4f1;
+      border: 1.5px solid #fdd5c8;
+      color: var(--accent2);
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+      text-align: left;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      margin-bottom: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .btn:hover {
+      background: #245a41;
+      transform: translateY(-1px);
+    }
+
+    .admin-link {
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .admin-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .admin-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-card">
+    <div class="logo">Shift<span>Sync</span></div>
+
+    <h1>Employee Login</h1>
+
+    {% if msg %}
+      <div class="error-box">
+        {{ msg }}
+      </div>
+    {% endif %}
+
+    <form action="{{url_for('login')}}" method="POST">
+
+      <label>Employee ID</label>
+      <input type="text" name="EmployeeId" required>
+
+      <button type="submit" class="btn">Log in</button>
+
+    </form>
+
+    <div class="admin-link">
+      Are you an administrator?
+      <a href="{{ url_for('admin') }}">Sign in here</a>
+    </div>
+
+  </div>
+
+</body>
+</html>

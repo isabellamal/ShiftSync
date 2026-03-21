@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> ShiftSync - Enter Password</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root{
+             --bg: #f4f3ef;
+            --surface: #ffffff;
+            --border: #e0ddd6;
+            --accent: #2d6a4f;
+            --accent-light: #d8f3dc;
+            --accent2: #e76f51;
+            --text: #1a1a1a;
+            --muted: #7a7a72;
+            --radius: 14px;
+        }
+
+        body{
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+        }
+
+        nav{
+            background: var(--surface);
+            border-bottom: 1.5px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo{
+            font-family: 'Syne', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .nav-logo span {color: var(--accent2);}
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 60px);
+        }
+
+        .form-card{
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            width: 350px;
+        }
+
+        h2{
+            font-family: 'Syne', sans-serif;
+            margin-bottom: 1rem;
+        }
+
+        input{
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn{
+            width:100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn:hover{
+            background: #245a41;
+        }
+
+        .error{
+            color: var(--accent2);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <div class="nav-logo">Shift<span>Sync</span></div>
+</nav>
+
+<main>
+    <div class="form-card">
+        <h2>Enter Password</h2>
+        <p style="color: var(--muted); font-size: 0.9rem;">Employee ID: <strong>{{ user }}</strong></p>
+
+        {% if msg %}
+            <div class="error">{{ msg }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <button type="submit" class="btn">Log In</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>
