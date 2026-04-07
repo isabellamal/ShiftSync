@@ -681,7 +681,7 @@ def swap_requests():
     except Exception:
         requests = []
 
-    return render_template("swap_requests.html", requests=requests)
+    return render_template("swap_requests.html", requests=requests, user=user_id)
 
 #API calendar data for the dashboard JS
 @app.route('/api/shifts')
