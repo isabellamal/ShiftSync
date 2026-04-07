@@ -2,61 +2,152 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ShiftSync - Availability</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --bg: #f4f3ef; --surface: #ffffff; --border: #e0ddd6;
+      --accent: #2d6a4f; --accent-light: #d8f3dc; --accent2: #e76f51;
+      --text: #1a1a1a; --muted: #7a7a72; --radius: 14px;
+    }
+ 
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+ 
+    nav { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--accent2); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-greeting { font-size: 0.875rem; color: var(--muted); }
+    .nav-greeting strong { color: var(--text); font-weight: 600; }
+    .btn-logout { background: transparent; border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+    .btn-logout:hover { border-color: var(--accent2); color: var(--accent2); }
+    main { flex: 1; padding: 2rem; max-width: 800px; width: 100%; margin: 0 auto; }
+    .page-header { margin-bottom: 1.75rem; }
+    .page-header h1 { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px; }
+    .error-banner { background: #fff4f1; border: 1.5px solid #fdd5c8; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--accent2); font-weight: 500; }
+    .card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    select {
+      padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--border);
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem; background: var(--surface);
+      color: var(--text); transition: border-color 0.2s; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7a72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+ 
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; text-decoration: none; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #245a41; transform: translateY(-1px); }
+    .btn-danger { background: #fff4f1; color: var(--accent2); border: 1.5px solid #fdd5c8; padding: 5px 12px; font-size: 0.78rem; border-radius: 8px; }
+    .btn-danger:hover { background: var(--accent2); color: #fff; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); padding: 5px 12px; font-size: 0.78rem; border-radius: 8px; }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .avail-list { list-style: none; }
+    .avail-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); gap: 1rem; }
+    .avail-item:last-child { border-bottom: none; }
+    .avail-info { display: flex; align-items: center; gap: 0.6rem; }
+    .avail-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    .avail-day-label { font-weight: 600; font-size: 0.875rem; }
+    .avail-time { font-size: 0.8rem; color: var(--muted); }
+    .avail-actions { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+ 
+    .empty-msg { color: var(--muted); font-size: 0.875rem; padding: 0.5rem 0; }
+  </style>
 </head>
 <body>
-  <h1>Availability</h1>
-  <p>Employee ID: <strong>{{ user }}</strong></p>
-  <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a> | <a href="{{ url_for('logout') }}">Log out</a></p>
-
+<nav>
+    <div class="nav-logo">Shift<span>Sync</span></div>
+    <div class="nav-right">
+    <span class="nav-greeting">Employee <strong>{{ user }}</strong></span>
+    <a href="{{ url_for('dashboard') }}" class="btn-logout">Dashboard</a>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Log out</a>
+  </div>
+</nav>
+<main>
+  <div class="page-header">
+    <h1>My Availability</h1>
+  </div>
   {% if msg %}
-    <p style="color:red;">{{ msg }}</p>
+    <div class="error-banner">{{ msg }}</div>
   {% endif %}
-
-  <h2>Add Availability</h2>
-  <form method="POST">
-    <label>Day</label>
-    <select name="day" required>
-      {% for d in days %}
-        <option value="{{ d }}">{{ d }}</option>
-      {% endfor %}
-    </select>
-
-    <label>Start</label>
-    <select name="start" required>
-      {% for t in times %}
-        <option value="{{ t }}">{{ t }}</option>
-      {% endfor %}
-    </select>
-
-    <label>End</label>
-    <select name="end" required>
-      {% for t in times %}
-        <option value="{{ t }}">{{ t }}</option>
-      {% endfor %}
-    </select>
-
-    <button type="submit">Add</button>
-  </form>
-
-  <hr>
-
-  <h2>My Availability Blocks</h2>
-  {% if availability and availability|length > 0 %}
-    <ul>
-      {% for a in availability %}
-        <li>
-          {{ a[1] }} — {{ a[2] }} to {{ a[3] }}
-          <a href="{{ url_for('edit_availability', availability_id=a[0]) }}">Edit</a>
-
-          <form method="POST" action="{{ url_for('delete_availability', availability_id=a[0]) }}" style="display:inline;">
-            <button type="submit">Delete</button>
-          </form>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No availability added yet.</p>
-  {% endif %}
+ 
+  <!-- add availability -->
+  <div class="card">
+    <div class="card-title">Add Availability</div>
+    <form method="POST">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Day</label>
+          <select name="day" required>
+            {% for d in days %}
+              <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+ 
+        <div class="form-group">
+          <label>Start</label>
+          <select name="start" required>
+            {% for t in times %}
+              <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+ 
+        <div class="form-group">
+          <label>End</label>
+          <select name="end" required>
+            {% for t in times %}
+              <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+ 
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+      </div>
+    </form>
+  </div>
+ 
+  <!-- preexisting Blocks -->
+  <div class="card">
+    <div class="card-title">My Availability Blocks</div>
+ 
+    {% if availability and availability|length > 0 %}
+      <ul class="avail-list">
+        {% for a in availability %}
+          <li class="avail-item">
+            <div class="avail-info">
+              <span class="avail-dot"></span>
+              <div>
+                <div class="avail-day-label">{{ a[1] }}</div>
+                <div class="avail-time">{{ a[2] }} – {{ a[3] }}</div>
+              </div>
+            </div>
+            <div class="avail-actions">
+              <a href="{{ url_for('edit_availability', availability_id=a[0]) }}" class="btn btn-secondary">Edit</a>
+              <form method="POST" action="{{ url_for('delete_availability', availability_id=a[0]) }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-msg">No availability added yet.</p>
+    {% endif %}
+  </div>
+</main>
 </body>
 </html>
+
+

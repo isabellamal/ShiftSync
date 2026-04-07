@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --bg: #f4f3ef; --surface: #ffffff; --border: #e0ddd6;
+      --accent: #2d6a4f; --accent-light: #d8f3dc; --accent2: #e76f51;
+      --text: #1a1a1a; --muted: #7a7a72; --radius: 14px;
+    }
+ 
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--accent2); }
+    main { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 2.5rem 1rem; }
+    .form-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.06); }
+    .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); text-decoration: none; margin-bottom: 1.25rem; transition: color 0.2s; }
+    .back-link:hover { color: var(--accent); }
+    h1 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 1.5rem; }
+    .error-banner { background: #fff4f1; border: 1.5px solid #fdd5c8; border-radius: 10px; padding: 0.6rem 0.8rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--accent2); font-weight: 500; }
+ 
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1rem; }
+    label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    select {
+      padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--border);
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--surface);
+      color: var(--text); transition: border-color 0.2s; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7a72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+ 
+    .btn-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; text-decoration: none; flex: 1; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #245a41; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Shift<span>Sync</span></div>
+</nav>
+<main>
+  <div class="form-card">
+    <a href="{{ url_for('availability') }}" class="back-link">← Back to Availability</a>
+ 
+    <h1>Edit Availability</h1>
+ 
+    {% if msg %}
+      <div class="error-banner">{{ msg }}</div>
+    {% endif %}
+ 
+    <form method="POST">
+      <div class="form-group">
+        <label>Day</label>
+        <select name="day" required>
+          {% for d in days %}
+            <option value="{{ d }}" {% if d == record[1] %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+         <label>Start</label>
+        <select name="start" required>
+          {% for t in times %}
+            <option value="{{ t }}" {% if t == record[2] %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>End</label>
+        <select name="end" required>
+          {% for t in times %}
+            <option value="{{ t }}" {% if t == record[3] %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <a href="{{ url_for('availability') }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+
+  </div>
+</main>
+
+</body>
+</html>
+ 
