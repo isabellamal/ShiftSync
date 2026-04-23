@@ -72,11 +72,11 @@ def admin():
 
     return render_template('admin.html', msg=msg)
 
-@app.route('/adminpassword', methods=['GET', 'POST']) 
+@app.route('/adminpassword', methods=['GET', 'POST'])
 def adminpassword():
-    if 'AdminId' not in session: 
+    if 'AdminId' not in session:
         return redirect(url_for('login'))
-    
+
     admin_id = session['AdminId']
     msg = ""
 
@@ -92,14 +92,8 @@ def adminpassword():
             msg = "Database error!"
             return render_template('adminpassword.html', admin=admin_id, msg=msg)
 
-        if (row is None) or (row[0] is None) or (row[0] == ""):
-            msg = "No admin password found."
-            return render_template('adminpassword.html', admin=admin_id, msg=msg)
-        
-        saved_hash = row[0]
-
-        if check_password_hash(saved_hash, entered_pw):
-            return redirect(url_for('admin_dashboard'))
+        if row and row[0] == entered_pw:
+            return redirect(url_for('admin_dashboard'))  # redirect to admin dashboard when ready
         else:
             msg = "Incorrect password."
 
@@ -722,6 +716,100 @@ def api_shifts():
         })
     
     return jsonify(shifts)
+
+@app.route('/admin/availability')
+def admin_view_availability():
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+    msg = ""
+    try:
+        with sql.connect("ShiftSyncDB.db") as con:
+            cur = con.cursor()
+            cur.execute("""
+                SELECT AvailabilityId, EmployeeId, DayOfWeek, StartTime, EndTime
+                FROM EmployeeAvailability
+                WHERE IsAvailable=1
+                ORDER BY EmployeeId,
+                    CASE DayOfWeek
+                        WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2
+                        WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4
+                        WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6
+                        WHEN 'Sunday' THEN 7 ELSE 8
+                    END, StartTime
+            """)
+            availability = cur.fetchall()
+    except Exception:
+        availability = []
+        msg = "Database error while loading availability."
+    return render_template('admin_view_availability.html', availability=availability, msg=msg)
+
+@app.route('/admin/availability/edit/<int:availability_id>', methods=['GET', 'POST'])
+def admin_edit_availability_record(availability_id):
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+    msg = ""
+    try:
+        with sql.connect("ShiftSyncDB.db") as con:
+            cur = con.cursor()
+            cur.execute("""
+                SELECT AvailabilityId, EmployeeId, DayOfWeek, StartTime, EndTime
+                FROM EmployeeAvailability
+                WHERE AvailabilityId=?
+            """, (availability_id,))
+            record = cur.fetchone()
+    except Exception:
+        record = None
+    if not record:
+        return redirect(url_for('admin_view_availability'))
+    if request.method == 'POST':
+        day = request.form.get('day', '').strip()
+        start = request.form.get('start', '').strip()
+        end = request.form.get('end', '').strip()
+        if day not in DAYS:
+            msg = "Invalid day selected."
+        elif start not in TIME_CHOICES or end not in TIME_CHOICES:
+            msg = "Invalid time selected."
+        elif end <= start:
+            msg = "End time must be after start time."
+        else:
+            try:
+                with sql.connect("ShiftSyncDB.db") as con:
+                    cur = con.cursor()
+                    cur.execute("""
+                        UPDATE EmployeeAvailability
+                        SET DayOfWeek=?, StartTime=?, EndTime=?
+                        WHERE AvailabilityId=?
+                    """, (day, start, end, availability_id))
+                    con.commit()
+                return redirect(url_for('admin_view_availability'))
+            except Exception:
+                msg = "Database error while updating."
+    return render_template('admin_edit_availability.html', record=record, msg=msg, days=DAYS, times=TIME_CHOICES)
+
+@app.route('/admin/availability/delete/<int:availability_id>', methods=['POST'])
+def admin_delete_availability(availability_id):
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+    try:
+        with sql.connect("ShiftSyncDB.db") as con:
+            cur = con.cursor()
+            cur.execute("DELETE FROM EmployeeAvailability WHERE AvailabilityId=?", (availability_id,))
+            con.commit()
+    except Exception:
+        pass
+    return redirect(url_for('admin_view_availability'))
+
+@app.route('/admin/schedule')
+def admin_view_schedule():
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+    return render_template('admin_view_schedule.html')
+
+@app.route('/admin/schedule/edit')
+def admin_edit_schedule():
+    if 'AdminId' not in session:
+        return redirect(url_for('admin'))
+    return render_template('admin_edit_schedule.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,15 +1,86 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShiftSync - Administrator Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f4f3ef; --surface: #ffffff; --border: #e0ddd6;
+      --accent: #2d6a4f; --accent-light: #d8f3dc; --accent2: #e76f51;
+      --text: #1a1a1a; --muted: #7a7a72; --radius: 14px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--accent2); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-greeting { font-size: 0.875rem; color: var(--muted); }
+    .nav-greeting strong { color: var(--text); font-weight: 600; }
+    .btn-logout { background: transparent; border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+    .btn-logout:hover { border-color: var(--accent2); color: var(--accent2); }
+    main { flex: 1; padding: 2rem; max-width: 960px; width: 100%; margin: 0 auto; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .action-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; text-decoration: none; color: var(--text); transition: all 0.18s; display: flex; flex-direction: column; gap: 0.5rem; }
+    .action-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+    .action-card .card-icon { font-size: 1.5rem; }
+    .action-card .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+    .action-card .card-desc { font-size: 0.82rem; color: var(--muted); }
+    .action-card.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .action-card.primary .card-desc { color: rgba(255,255,255,0.75); }
+    .action-card.primary:hover { background: #245a41; border-color: #245a41; }
+  </style>
 </head>
 <body>
-    <h1>Admin Dashboard</h1>
-    <p>Welcome, {{ admin }}</p>
 
-    <a href="{{ url_for('admin_reset_password') }}">Change Password</a>
-    <br><br>
-    <a href="{{ url_for('logout') }}">Log out</a>
+<nav>
+  <div class="nav-logo">Shift<span>Sync</span></div>
+  <div class="nav-right">
+    <span class="nav-greeting">Logged in as <strong>Administrator</strong></span>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Log out</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Administrator Dashboard</h1>
+    <p>Manage your team by viewing and editing employee schedules and availability all in one place.</p>
+  </div>
+
+  <div class="section-title">Employee Availability</div>
+  <div class="action-grid" style="margin-bottom: 2rem;">
+    <a href="{{ url_for('admin_view_availability') }}" class="action-card primary">
+      <div class="card-icon">📋</div>
+      <div class="card-title">View Employee Availability</div>
+      <div class="card-desc">See the availability windows submitted by all employees.</div>
+    </a>
+    <a href="{{ url_for('admin_view_availability') }}" class="action-card">
+      <div class="card-icon">✎</div>
+      <div class="card-title">Edit Employee Availability</div>
+      <div class="card-desc">Update or remove availability blocks for any employee.</div>
+    </a>
+  </div>
+
+  <div class="section-title">Employee Schedules</div>
+  <div class="action-grid">
+    <a href="{{ url_for('admin_view_schedule') }}" class="action-card primary">
+      <div class="card-icon">📅</div>
+      <div class="card-title">View Employee Schedule</div>
+      <div class="card-desc">Browse all scheduled shifts across your team.</div>
+    </a>
+    <a href="{{ url_for('admin_edit_schedule') }}" class="action-card">
+      <div class="card-icon">🗓</div>
+      <div class="card-title">Edit Employee Schedule</div>
+      <div class="card-desc">Add, modify, or remove shifts for any employee.</div>
+    </a>
+  </div>
+</main>
+
 </body>
 </html>
