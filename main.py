@@ -335,18 +335,17 @@ def dashboard():
         name = user_id
 
     try:
-        with sql.connect("ShiftSyncDB.db") as con:
-            cur = con.cursor()
-            cur.execute("""
-            SELECT r.RequestId, r.RequesterEmployeeId, s.ShiftDate, s.StartTime, s.EndTime, r.Status
-            FROM ShiftSwapRequests r
-            JOIN Shifts s ON r.ShiftId = s.ShiftId
-            WHERE r.TargetEmployeeId=? AND r.Status='pending'
-        """, (user_id,))
-        incoming_requests = cur.fetchall()
+            with sql.connect("ShiftSyncDB.db") as con:
+                cur = con.cursor()
+                cur.execute("""
+                    SELECT r.RequestId, r.RequesterEmployeeId, s.ShiftDate, s.StartTime, s.EndTime, r.Status
+                    FROM ShiftSwapRequests r
+                    JOIN Shifts s ON r.ShiftId = s.ShiftId
+                    WHERE r.TargetEmployeeId=? AND r.Status='pending'
+                """, (user_id,))
+                incoming_requests = cur.fetchall()
     except Exception:
-        incoming_requests = []
-
+            incoming_requests = []
 
     return render_template('dashboard.html',
                             user=user_id,
@@ -540,18 +539,39 @@ def swap_request():
         existing = None
 
     if not existing:
+        target_shift_id = request.form.get('target_shift_id', '').strip() or None
         try:
             with sql.connect("ShiftSyncDB.db") as con:
                 cur = con.cursor()
                 cur.execute("""
                     INSERT INTO ShiftSwapRequests
-                        (RequesterEmployeeId, ShiftId, TargetEmployeeId, Reason, Status, CreatedAt)
-                    VALUES (?, ?, ?, ?, 'pending', datetime('now'))
-                """, (user_id, shift_id, target_id, reason))
+                        (RequesterEmployeeId, ShiftId, TargetEmployeeId, TargetShiftId, Reason, Status, CreatedAt)
+                    VALUES (?, ?, ?, ?, ?, 'pending', datetime('now'))
+                """, (user_id, shift_id, target_id, target_shift_id, reason))
                 con.commit()
         except Exception:
             pass
     return redirect(url_for('dashboard'))
+
+@app.route('/api/shifts/employee/<employee_id>')
+def api_employee_shifts(employee_id):
+    if 'EmployeeId' not in session:
+        return jsonify([]), 403
+    today = date.today()
+    try:
+        with sql.connect("ShiftSyncDB.db") as con:
+            cur = con.cursor()
+            cur.execute("""
+                SELECT ShiftId, ShiftDate, StartTime, EndTime
+                FROM Shifts
+                WHERE EmployeeId=? AND ShiftDate >= ?
+                ORDER BY ShiftDate, StartTime
+                LIMIT 10
+            """, (employee_id, today.isoformat()))
+            rows = cur.fetchall()
+    except Exception:
+        rows = []
+    return jsonify([{'shift_id': r[0], 'date': r[1], 'start': r[2], 'end': r[3]} for r in rows])
 
 @app.route('/swap-request/cancel/<int:request_id>', methods=['POST'])
 def cancel_swap_request(request_id):
@@ -573,6 +593,62 @@ def cancel_swap_request(request_id):
 
     return redirect(url_for('dashboard'))
 
+# @app.route('/swap-request/approve/<int:request_id>', methods=['POST'])
+# def approve_swap_request(request_id):
+#     if 'EmployeeId' not in session:
+#         return redirect(url_for('dashboard'))
+
+#     approver_id = session['EmployeeId']
+
+#     try:
+#         with sql.connect("ShiftSyncDB.db") as con:
+#             cur = con.cursor()
+
+#             # 1) Load the request
+#             cur.execute("""
+#                 SELECT RequesterEmployeeId, ShiftId, TargetEmployeeId, TargetShiftId, Status
+#                 FROM ShiftSwapRequests
+#                 WHERE RequestId=?
+#             """, (request_id,))
+#             row = cur.fetchone()
+
+#             if not row:
+#                 return redirect(url_for('dashboard'))
+
+#             requester_id, shift_id, target_id, target_shift_id, status = row
+
+#             if status != 'pending' or target_id != approver_id:
+#                 return redirect(url_for('dashboard'))
+
+#             # 2) Verify requester still owns their shift
+#             cur.execute("SELECT EmployeeId FROM Shifts WHERE ShiftId=?", (shift_id,))
+#             r = cur.fetchone()
+#             if not r or r[0] != requester_id:
+#                 return redirect(url_for('dashboard'))
+
+#             # 3) If a target shift was specified, verify approver owns it
+#             if target_shift_id:
+#                 cur.execute("SELECT EmployeeId FROM Shifts WHERE ShiftId=?", (target_shift_id,))
+#                 r2 = cur.fetchone()
+#                 if not r2 or r2[0] != approver_id:
+#                     return redirect(url_for('dashboard'))
+
+#             # 4) Swap both shifts
+#             cur.execute("UPDATE Shifts SET EmployeeId=? WHERE ShiftId=?", (approver_id, shift_id))
+#             if target_shift_id:
+#                 cur.execute("UPDATE Shifts SET EmployeeId=? WHERE ShiftId=?", (requester_id, target_shift_id))
+
+#             # 5) Mark approved
+#             cur.execute("UPDATE ShiftSwapRequests SET Status='approved' WHERE RequestId=?", (request_id,))
+
+#             con.commit()
+
+#     except Exception:
+#         pass
+
+#     return redirect(url_for('dashboard'))
+
+
 @app.route('/swap-request/approve/<int:request_id>', methods=['POST'])
 def approve_swap_request(request_id):
     if 'EmployeeId' not in session:
@@ -584,9 +660,8 @@ def approve_swap_request(request_id):
         with sql.connect("ShiftSyncDB.db") as con:
             cur = con.cursor()
 
-            # 1) Load request (must be pending + assigned to me)
             cur.execute("""
-                SELECT RequesterEmployeeId, ShiftId, TargetEmployeeId, Status
+                SELECT RequesterEmployeeId, ShiftId, TargetEmployeeId, TargetShiftId, Status
                 FROM ShiftSwapRequests
                 WHERE RequestId=?
             """, (request_id,))
@@ -595,31 +670,30 @@ def approve_swap_request(request_id):
             if not row:
                 return redirect(url_for('dashboard'))
 
-            requester_id, shift_id, target_id, status = row
+            requester_id, requester_shift_id, target_id, target_shift_id, status = row
+            target_shift_id = request.form.get('target_shift_id') or target_shift_id
 
-            # must be pending and I must be the target
             if status != 'pending' or target_id != approver_id:
                 return redirect(url_for('dashboard'))
 
-            # 2) Double-check the shift still belongs to requester
-            cur.execute("""
-                SELECT EmployeeId
-                FROM Shifts
-                WHERE ShiftId=?
-            """, (shift_id,))
-            shift_row = cur.fetchone()
-
-            if not shift_row or shift_row[0] != requester_id:
+            if not target_shift_id:
                 return redirect(url_for('dashboard'))
 
-            # 3) Move the shift to the approver(target employee)
-            cur.execute("""
-                UPDATE Shifts
-                SET EmployeeId=?
-                WHERE ShiftId=?
-            """, (approver_id, shift_id))
+            cur.execute("SELECT EmployeeId FROM Shifts WHERE ShiftId=?", (requester_shift_id,))
+            requester_shift_owner = cur.fetchone()
 
-            # 4) Mark request approved
+            cur.execute("SELECT EmployeeId FROM Shifts WHERE ShiftId=?", (target_shift_id,))
+            target_shift_owner = cur.fetchone()
+
+            if not requester_shift_owner or requester_shift_owner[0] != requester_id:
+                return redirect(url_for('dashboard'))
+
+            if not target_shift_owner or target_shift_owner[0] != approver_id:
+                return redirect(url_for('dashboard'))
+
+            cur.execute("UPDATE Shifts SET EmployeeId=? WHERE ShiftId=?", (approver_id, requester_shift_id))
+            cur.execute("UPDATE Shifts SET EmployeeId=? WHERE ShiftId=?", (requester_id, target_shift_id))
+
             cur.execute("""
                 UPDATE ShiftSwapRequests
                 SET Status='approved'
@@ -628,11 +702,11 @@ def approve_swap_request(request_id):
 
             con.commit()
 
-    except Exception:
-        pass
+    except Exception as e:
+        print("Swap approval error:", e)
 
     return redirect(url_for('dashboard'))
-
+    
 @app.route('/swap-request/deny/<int:request_id>', methods=['POST'])
 def deny_swap_request(request_id):
     if 'EmployeeId' not in session:
@@ -687,11 +761,11 @@ def api_shifts():
     week_offset = int(request.args.get('week', 0))
     today = date.today()
     #find sunday of current week
-    days_since_sunday = today.weekday() + 1 #weekday(): Mon=0...Sun=6
-    if today.weekday() == 6:
-        days_since_sunday = 0
-    week_start = today - timedelta(days=days_since_sunday) + timedelta(weeks=week_offset)
+    # Monday-based week to match the JS calendar
+    days_since_monday = today.weekday()  # Mon=0, Sun=6
+    week_start = today - timedelta(days=days_since_monday) + timedelta(weeks=week_offset)
     week_end = week_start + timedelta(days=6)
+    print(f"DEBUG: user={user_id} week_offset={week_offset} week_start={week_start} week_end={week_end}")
 
     try:
         with sql.connect("ShiftSyncDB.db") as con:

@@ -82,65 +82,6 @@
     .alert-banner a { color: var(--accent2); font-weight: 700; }
   </style>
 </head>
-<!-- SWAP MODAL -->
-<div class="modal-overlay" id="swapModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:500; align-items:center; justify-content:center;">
-  <div style="background:#fff; border-radius:14px; padding:2rem; width:420px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
-    <h2 style="font-family:'Syne',sans-serif; margin-bottom:1rem;">⇄ Request Shift Swap</h2>
-    <form method="POST" action="{{ url_for('swap_request') }}">
-
-      <label style="font-size:0.82rem; font-weight:600; color:#7a7a72; text-transform:uppercase;">Select Shift to Swap</label>
-      {% if upcoming_shifts %}
-        <select name="shift_id" required style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin:6px 0 1rem; font-family:'DM Sans',sans-serif;">
-          {% for s in upcoming_shifts %}
-            <option value="{{ s[0] }}">{{ s[1] }} | {{ s[2] }} – {{ s[3] }}</option>
-          {% endfor %}
-        </select>
-      {% else %}
-        <p style="color:#7a7a72; font-size:0.875rem; margin:0.5rem 0 1rem;">No upcoming shifts to swap.</p>
-      {% endif %}
-
-      <label style="font-size:0.82rem; font-weight:600; color:#7a7a72; text-transform:uppercase;">Target Employee ID (optional)</label>
-      <input type="text" name="target_employee_id" placeholder="Leave blank for any swap partner" style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin:6px 0 1rem; font-family:'DM Sans',sans-serif;">
-
-      <label style="font-size:0.82rem; font-weight:600; color:#7a7a72; text-transform:uppercase;">Reason (optional)</label>
-      <textarea name="reason" placeholder="e.g. Doctor appointment..." style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin:6px 0 1rem; font-family:'DM Sans',sans-serif; min-height:70px;"></textarea>
-
-      <div style="display:flex; gap:0.75rem; margin-top:1rem;">
-        <button type="button" onclick="closeSwapModal()" style="flex:1; padding:10px; border-radius:10px; border:1.5px solid #e0ddd6; background:transparent; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer;">Cancel</button>
-        {% if upcoming_shifts %}
-          <button type="submit" style="flex:1; padding:10px; border-radius:10px; border:none; background:#2d6a4f; color:white; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer;">Submit Request</button>
-        {% endif %}
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-  function openSwapModal() {
-    const m = document.getElementById('swapModal');
-    m.style.display = 'flex';
-  }
-  function closeSwapModal() {
-    document.getElementById('swapModal').style.display = 'none';
-  }
-  document.getElementById('swapModal').addEventListener('click', function(e) {
-    if (e.target === this) closeSwapModal();
-  });
-</script>
-<script>
-  function openIncomingModal() {
-    const m = document.getElementById('incomingModal');
-    m.style.display = 'flex';
-  }
-  function closeIncomingModal() {
-    document.getElementById('incomingModal').style.display = 'none';
-  }
-
-  document.getElementById('incomingModal')?.addEventListener('click', function(e) {
-    if (e.target === this) closeIncomingModal();
-  });
-</script>
-
 <body>
 
 <nav>
@@ -168,12 +109,11 @@
     <a class="btn btn-primary"   href="{{ url_for('availability') }}">＋ Add Availability</a>
     <a class="btn btn-secondary" href="{{ url_for('availability') }}">✎ Modify Availability</a>
     <button class="btn btn-warning" onclick="openSwapModal()">
-  ⇄ Swap / Request Shifts
-</button>
+      ⇄ Swap / Request Shifts
       {% if incoming_requests|length > 0 %}
         <span class="incoming-badge">{{ incoming_requests|length }}</span>
       {% endif %}
-    </a>
+    </button>
   </div>
 
   <div class="section-header">
@@ -264,6 +204,15 @@
 
           <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
             <form method="POST" action="{{ url_for('approve_swap_request', request_id=r[0]) }}">
+              <div style="margin-bottom:0.75rem;">
+                <label style="font-size:0.85rem; color:#7a7a72;">Select your shift to give in return</label>
+                <select name="target_shift_id" required
+                  style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin-top:4px;">
+                  {% for s in upcoming_shifts %}
+                    <option value="{{ s[0] }}">{{ s[1] }} | {{ s[2] }} – {{ s[3] }}</option>
+                  {% endfor %}
+                </select>
+              </div>
               <button type="submit" class="btn btn-primary">Approve</button>
             </form>
 
@@ -285,7 +234,52 @@
 
   </div>
 </main>
+<!-- SWAP MODAL -->
+<div class="modal-overlay" id="swapModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:500; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:2rem; width:520px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+    <h2 style="font-family:'Syne',sans-serif; margin-bottom:1rem;">Request Shift Swap</h2>
 
+    <form method="POST" action="{{ url_for('swap_request') }}">
+      <label>Select Your Shift to Swap</label>
+
+      {% if upcoming_shifts %}
+        <select name="shift_id" required style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin:6px 0 1rem;">
+          {% for s in upcoming_shifts %}
+            <option value="{{ s[0] }}">{{ s[1] }} | {{ s[2] }} – {{ s[3] }}</option>
+          {% endfor %}
+        </select>
+      {% else %}
+        <p>No upcoming shifts to swap.</p>
+      {% endif %}
+
+      <label>Target Employee ID</label>
+      <input type="text" id="targetEmpInput" name="target_employee_id" placeholder="Enter employee ID"
+        style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin:6px 0 0.5rem;">
+
+      <button type="button" onclick="loadTargetShifts()" class="btn btn-secondary">
+        Load Their Shifts
+      </button>
+
+      <div id="targetShiftWrapper" style="display:none; margin:1rem 0;">
+        <label>Select Their Shift to Receive</label>
+        <select name="target_shift_id" id="targetShiftSelect"
+          style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6;">
+        </select>
+      </div>
+
+      <label>Reason</label>
+      <textarea name="reason" placeholder="e.g. Doctor appointment..."
+        style="width:100%; padding:9px; border-radius:8px; border:1.5px solid #e0ddd6; margin:6px 0 1rem; min-height:70px;"></textarea>
+
+      <div style="display:flex; gap:0.75rem;">
+        <button type="button" onclick="closeSwapModal()" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        {% if upcoming_shifts %}
+          <button type="submit" class="btn btn-primary" style="flex:1;">Submit Request</button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
 <script>
   const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const HOUR_START = 6;
@@ -402,6 +396,48 @@
   function shiftWeek(dir) { weekOffset += dir; buildCalendar(); }
 
   buildCalendar();
+
+
+
+  function openSwapModal() {
+    const m = document.getElementById('swapModal');
+    m.style.display = 'flex';
+  }
+
+  function closeSwapModal() {
+    const m = document.getElementById('swapModal');
+    m.style.display = 'none';
+  }
+
+  function openIncomingModal() {
+    const m = document.getElementById('incomingModal');
+    m.style.display = 'flex';
+  }
+
+  function closeIncomingModal() {
+    const m = document.getElementById('incomingModal');
+    m.style.display = 'none';
+  }
+
+  async function loadTargetShifts() {
+    const empId = document.getElementById('targetEmpInput').value.trim();
+    if (!empId) return;
+    const resp = await fetch('/api/shifts/employee/' + empId);
+    const shifts = await resp.json();
+    const select = document.getElementById('targetShiftSelect');
+    select.innerHTML = '';
+    if (shifts.length === 0) {
+      select.innerHTML = '<option disabled>No upcoming shifts found</option>';
+    } else {
+      shifts.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.shift_id;
+        opt.textContent = s.date + ' | ' + s.start + ' – ' + s.end;
+        select.appendChild(opt);
+      });
+    }
+    document.getElementById('targetShiftWrapper').style.display = 'block';
+  }
 </script>
 </body>
 </html>
